@@ -15,31 +15,31 @@
         .container {
             display: flex;
             justify-content: space-around; /* 左右均等に配置、余白を小さく調整 */
-            max-width: 900px; /* 横幅を維持 */
+            max-width: 1200px; /* 横幅を前の値（1200px）に戻す */
             background-color: #fff;
-            padding: 15px; /* パディングを少し小さく */
+            padding: 20px; /* パディングを前の値（20px）に戻す */
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%; /* 全体の幅を維持 */
+            width: 90%; /* 全体の幅を前の値（90%）に戻す */
         }
         table {
             border-collapse: collapse;
-            margin-right: 15px; /* テーブルの右側の余白を小さく調整 */
+            margin-right: 20px; /* テーブルの右側の余白を前の値（20px）に戻す */
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px; /* セルのパディングを維持 */
+            padding: 10px; /* セルのパディングを前の値（10px）に戻す */
             text-align: center;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #3F51B5; /* テーブルのタイトル行を明るめのダークブルー（インディゴ）に変更 */
             color: white;
         }
         td {
             background-color: #fafafa;
         }
         .name-input {
-            width: 100px; /* 入力欄の幅を維持 */
+            width: 120px; /* 入力欄の幅を前の値（120px）に戻す */
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -49,20 +49,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start; /* 上部から配置 */
-            width: 250px; /* 右側の幅を維持 */
+            width: 300px; /* 右側の幅を前の値（300px）に戻す */
             height: 350px; /* 固定高さを維持 */
             position: relative; /* 内部要素の配置基準 */
-            padding: 10px; /* 内部余白を追加して右側の余白を大きく */
+            padding: 10px; /* 内部余白を維持 */
         }
         .result {
-            font-size: 40px; /* 文字サイズを維持 */
+            font-size: 48px; /* 文字サイズを前の値（48px）に戻す */
             font-weight: bold;
             color: #333;
-            margin-bottom: 15px; /* マージンを維持 */
+            margin-bottom: 20px; /* マージンを前の値（20px）に戻す */
             transition: color 0.3s;
             text-align: center;
-            line-height: 40px; /* 行の高さを固定 */
-            height: 40px; /* 高さを固定 */
+            line-height: 48px; /* 行の高さを文字サイズに合わせる */
+            height: 48px; /* 高さを固定 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -78,74 +78,97 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 15px; /* マージンを維持 */
+            margin-bottom: 20px; /* マージンを前の値（20px）に戻す */
             position: absolute; /* 絶対位置で固定 */
-            top: 60px; /* ボタンの位置を維持 */
+            top: 70px; /* ボタンの位置を維持 */
         }
         .history-container {
             width: 100%;
             text-align: left;
             position: absolute; /* 履歴を固定位置に */
-            bottom: 15px; /* 履歴の下部余白を少し小さく */
+            bottom: 20px; /* 履歴の下部余白を前の値（20px）に戻す */
             left: 0; /* 左端に配置 */
         }
         .history-title {
-            font-size: 16px; /* タイトル文字サイズを維持 */
+            font-size: 18px; /* タイトル文字サイズを前の値（18px）に戻す */
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
         }
         .history {
-            font-size: 14px; /* 履歴文字サイズを維持 */
+            font-size: 16px; /* 履歴文字サイズを前の値（16px）に戻す */
             color: #666;
             width: 100%;
-            max-height: 80px; /* 履歴の高さを維持 */
+            max-height: 100px; /* 履歴の高さを前の値（100px）に戻す */
             overflow-y: auto; /* 縦スクロール */
             border: 1px solid #ddd;
-            padding: 8px; /* パディングを維持 */
+            padding: 10px; /* パディングを前の値（10px）に戻す */
             border-radius: 4px;
             background-color: #fafafa;
             word-wrap: break-word;
         }
+        textarea#nameInput {
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical; /* 允许垂直调整大小 */
+        }
+        .name-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            position: relative;
+            top: 0; /* ボタンをテーブルの上部に固定 */
+        }
         button {
-            padding: 10px 20px; /* ボタンのパディングを維持 */
-            font-size: 14px; /* ボタン文字サイズを維持 */
+            padding: 12px 24px; /* ボタンのパディングを前の値（12px 24px）に戻す */
+            font-size: 16px; /* ボタン文字サイズを前の値（16px）に戻す */
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #3F51B5; /* 「抽選」「名前追加」ボタンを明るめのダークブルー（インディゴ）に変更 */
             color: white;
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #303F9F; /* ホバー時のインディゴを少し暗く */
         }
-        button:nth-child(2) {
-            background-color: #f44336;
+        .name-buttons button:nth-child(2),
+        .button-container button:nth-child(2) {
+            background-color: #757575; /* 「名前クリア」「クリア」ボタンを明るめのグレー（中間グレー）に変更 */
         }
-        button:nth-child(2):hover {
-            background-color: #da190b;
+        .name-buttons button:nth-child(2):hover,
+        .button-container button:nth-child(2):hover {
+            background-color: #616161; /* ホバー時のグレーを少し暗く */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <table id="nominationTable">
-            <thead>
-                <tr>
-                    <th>名前</th>
-                    <th>1回目</th>
-                    <th>2回目</th>
-                    <th>3回目</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+        <div>
+            <textarea id="nameInput" rows="5" cols="30" placeholder="名前を一行ずつ入力または貼り付け"></textarea>
+            <div class="name-buttons">
+                <button onclick="pasteNames()">名前追加</button>
+                <button onclick="clearNames()" title="名前をクリアします">名前クリア</button>
+            </div>
+            <table id="nominationTable">
+                <thead>
+                    <tr>
+                        <th>名前</th>
+                        <th>1回目</th>
+                        <th>2回目</th>
+                        <th>3回目</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
         <div class="result-area">
             <div class="result" id="resultDisplay">抽選結果</div>
             <div class="button-container">
                 <button onclick="draw()">抽選</button>
-                <button onclick="clearAll()">クリア</button>
+                <button onclick="clearAll()" title="抽選結果と履歴をクリアします">クリア</button>
             </div>
             <div class="history-container">
                 <div class="history-title">抽選履歴</div>
@@ -229,31 +252,42 @@
         }
 
         function clearAll() {
-            const rows = tbody.getElementsByTagName('tr');
             if (drawCount > 0) {
-                // 抽選結果がある場合、名前を残して抽選データのみクリア
+                // 抽選結果がある場合、名前はクリアせず、抽選結果と履歴のみクリア
+                const rows = tbody.getElementsByTagName('tr');
                 for (let i = 0; i < rows.length; i++) {
                     const cells = rows[i].getElementsByTagName('td');
                     for (let j = 1; j < cells.length; j++) {
                         cells[j].textContent = '';
                     }
                 }
-            } else {
-                // 抽選がない場合、名前も含めて全クリア
-                for (let i = 0; i < rows.length; i++) {
-                    rows[i].getElementsByTagName('input')[0].value = '';
-                    const cells = rows[i].getElementsByTagName('td');
-                    for (let j = 1; j < cells.length; j++) {
-                        cells[j].textContent = '';
-                    }
-                }
+                resultDisplay.textContent = "抽選結果";
+                resultDisplay.classList.remove('highlight');
+                drawHistory.textContent = "";
+                currentRound = 1;
+                drawCount = 0;
+                history = [];
             }
-            resultDisplay.textContent = "抽選結果";
-            resultDisplay.classList.remove('highlight');
-            drawHistory.textContent = "";
-            currentRound = 1;
-            drawCount = 0;
-            history = [];
+        }
+
+        function clearNames() {
+            // 名前とテキストエリアをクリア
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].getElementsByTagName('input')[0].value = '';
+            }
+            document.getElementById('nameInput').value = ''; // テキストエリアもクリア
+        }
+
+        function pasteNames() {
+            const text = document.getElementById('nameInput').value;
+            const names = text.split('\n').map(name => name.trim()).filter(name => name);
+
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < Math.min(names.length, rows.length); i++) {
+                rows[i].getElementsByTagName('input')[0].value = names[i];
+            }
+            document.getElementById('nameInput').value = ''; // 清空输入框
         }
     </script>
 </body>
