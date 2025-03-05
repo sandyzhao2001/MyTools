@@ -121,13 +121,28 @@
             position: relative;
             top: 0; /* ボタンをテーブルの上部に固定 */
         }
+        .row-input {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            position: relative;
+            top: 0; /* 行数入力欄とボタンをテーブルの上部に固定 */
+            align-items: center;
+        }
+        .row-input input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 60px;
+            font-size: 16px;
+        }
         button {
             padding: 12px 24px; /* ボタンのパディングを前の値（12px 24px）に戻す */
             font-size: 16px; /* ボタン文字サイズを前の値（16px）に戻す */
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            background-color: #3F51B5; /* 「抽選」「名前追加」ボタンを明るめのダークブルー（インディゴ）に変更 */
+            background-color: #3F51B5; /* 「抽選」「名前追加」「行数変更」ボタンを明るめのダークブルー（インディゴ）に変更 */
             color: white;
             transition: background-color 0.3s;
         }
@@ -135,10 +150,12 @@
             background-color: #303F9F; /* ホバー時のインディゴを少し暗く */
         }
         .name-buttons button:nth-child(2),
+        .row-input button,
         .button-container button:nth-child(2) {
-            background-color: #757575; /* 「名前クリア」「クリア」ボタンを明るめのグレー（中間グレー）に変更 */
+            background-color: #757575; /* 「名前クリア」「行数変更」「クリア」ボタンを明るめのグレー（中間グレー）に変更 */
         }
         .name-buttons button:nth-child(2):hover,
+        .row-input button:hover,
         .button-container button:nth-child(2):hover {
             background-color: #616161; /* ホバー時のグレーを少し暗く */
         }
@@ -151,6 +168,10 @@
             <div class="name-buttons">
                 <button onclick="pasteNames()">名前追加</button>
                 <button onclick="clearNames()" title="名前をクリアします">名前クリア</button>
+            </div>
+            <div class="row-input">
+                <input type="number" id="rowCount" min="5" max="100" value="20" placeholder="行数">
+                <button onclick="updateRows()" title="行数を変更します">行数変更</button>
             </div>
             <table id="nominationTable">
                 <thead>
@@ -181,22 +202,41 @@
         const tbody = document.getElementById('tableBody');
         const resultDisplay = document.getElementById('resultDisplay');
         const drawHistory = document.getElementById('drawHistory');
-        const maxRows = 20;
+        const rowCountInput = document.getElementById('rowCount');
+        let maxRows = 20; // デフォルトの行数
         let history = [];
         let currentRound = 1; // 現在のラウンド（1, 2, 3）
         let drawCount = 0; // 抽選カウント
 
         // テーブル初期化
-        for (let i = 0; i < maxRows; i++) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><input type="text" class="name-input" maxlength="20"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            `;
-            tbody.appendChild(row);
+        function initializeTable() {
+            tbody.innerHTML = ''; // 既存の行をクリア
+            for (let i = 0; i < maxRows; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="name-input" maxlength="20"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                `;
+                tbody.appendChild(row);
+            }
+            // 既存の名前や抽選結果を保持
+            const existingNames = Array.from(tbody.getElementsByTagName('input')).map(input => input.value.trim());
+            for (let i = 0; i < Math.min(existingNames.length, maxRows); i++) {
+                tbody.getElementsByTagName('input')[i].value = existingNames[i];
+            }
+            // 抽選結果も保持
+            for (let i = 0; i < maxRows; i++) {
+                const cells = tbody.getElementsByTagName('tr')[i].getElementsByTagName('td');
+                for (let j = 1; j < 4; j++) {
+                    cells[j].textContent = cells[j].textContent || '';
+                }
+            }
         }
+
+        // 初期化
+        initializeTable();
 
         function getParticipants(round) {
             const rows = tbody.getElementsByTagName('tr');
@@ -288,6 +328,17 @@
                 rows[i].getElementsByTagName('input')[0].value = names[i];
             }
             document.getElementById('nameInput').value = ''; // 清空输入框
+        }
+
+        function updateRows() {
+            const newRows = parseInt(rowCountInput.value, 10);
+            if (isNaN(newRows) || newRows < 5 || newRows > 100) {
+                alert("行数は5〜100の範囲で入力してください。");
+                rowCountInput.value = maxRows; // デフォルト値に戻す
+                return;
+            }
+            maxRows = newRows;
+            initializeTable();
         }
     </script>
 </body>
