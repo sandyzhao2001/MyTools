@@ -176,6 +176,7 @@
             <table id="nominationTable">
                 <thead>
                     <tr>
+                        <th>行番号</th>
                         <th>名前</th>
                         <th>1回目</th>
                         <th>2回目</th>
@@ -214,6 +215,7 @@
             for (let i = 0; i < maxRows; i++) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>${i + 1}</td> <!-- 行番号 -->
                     <td><input type="text" class="name-input" maxlength="20"></td>
                     <td></td>
                     <td></td>
@@ -229,7 +231,7 @@
             // 抽選結果も保持
             for (let i = 0; i < maxRows; i++) {
                 const cells = tbody.getElementsByTagName('tr')[i].getElementsByTagName('td');
-                for (let j = 1; j < 4; j++) {
+                for (let j = 2; j < 5; j++) { // 行番号列（1列目）をスキップ
                     cells[j].textContent = cells[j].textContent || '';
                 }
             }
@@ -243,7 +245,7 @@
             const participants = [];
             for (let i = 0; i < rows.length; i++) {
                 const name = rows[i].getElementsByTagName('input')[0].value.trim();
-                const cell = rows[i].getElementsByTagName('td')[round];
+                const cell = rows[i].getElementsByTagName('td')[round + 1]; // 行番号列をスキップ
                 if (name && !cell.textContent) {
                     participants.push({ name, row: i });
                 }
@@ -282,7 +284,7 @@
             setTimeout(() => resultDisplay.classList.remove('highlight'), 1500); // 1.5秒後に元に戻る
 
             const row = tbody.getElementsByTagName('tr')[winner.row];
-            const cell = row.getElementsByTagName('td')[currentRound];
+            const cell = row.getElementsByTagName('td')[currentRound + 1]; // 行番号列をスキップ
             drawCount++;
             cell.textContent = drawCount;
 
@@ -297,7 +299,7 @@
                 const rows = tbody.getElementsByTagName('tr');
                 for (let i = 0; i < rows.length; i++) {
                     const cells = rows[i].getElementsByTagName('td');
-                    for (let j = 1; j < cells.length; j++) {
+                    for (let j = 2; j < cells.length; j++) { // 行番号列と名前列をスキップ
                         cells[j].textContent = '';
                     }
                 }
