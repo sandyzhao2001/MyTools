@@ -2,193 +2,342 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>指名抽選ツール</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #4a90e2;
+            --primary-dark-color: #357abd;
+            --secondary-color: #757575;
+            --secondary-dark-color: #616161;
+            --background-color: #f7f9fc;
+            --card-background-color: #ffffff;
+            --text-color: #333;
+            --light-text-color: #fff;
+            --border-color: #e0e0e0;
+            --highlight-color: #f5a623;
+            --font-family: 'Noto Sans JP', Arial, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
-            display: flex;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
             margin: 0;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: var(--secondary-color);
+        }
+
         .container {
             display: flex;
-            justify-content: space-around; /* 左右均等に配置、余白を小さく調整 */
-            max-width: 1200px; /* 横幅を前の値（1200px）に戻す */
-            background-color: #fff;
-            padding: 20px; /* パディングを前の値（20px）に戻す */
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 90%; /* 全体の幅を前の値（90%）に戻す */
+            gap: 30px;
+            width: 100%;
+            max-width: 1280px;
+            align-items: flex-start;
         }
-        table {
-            border-collapse: collapse;
-            margin-right: 20px; /* テーブルの右側の余白を前の値（20px）に戻す */
+
+        .main-content {
+            flex: 2;
+            background-color: var(--card-background-color);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px; /* セルのパディングを前の値（10px）に戻す */
-            text-align: center;
-        }
-        th {
-            background-color: #3F51B5; /* テーブルのタイトル行を明るめのダークブルー（インディゴ）に変更 */
-            color: white;
-        }
-        td {
-            background-color: #fafafa;
-        }
-        .name-input {
-            width: 120px; /* 入力欄の幅を前の値（120px）に戻す */
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .result-area {
+
+        .sidebar {
+            flex: 1;
+            position: sticky;
+            top: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* 上部から配置 */
-            width: 300px; /* 右側の幅を前の値（300px）に戻す */
-            /* height: 350px; を削除して、内容に応じて自動調整 */
-            padding: 10px; /* 内部余白を維持 */
+            gap: 20px;
         }
-        .result {
-            font-size: 48px; /* 文字サイズを前の値（48px）に戻す */
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px; /* マージンを前の値（20px）に戻す */
-            transition: color 0.3s;
+
+        .card {
+            background-color: var(--card-background-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             text-align: center;
-            line-height: 48px; /* 行の高さを文字サイズに合わせる */
-            height: 48px; /* 高さを固定 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        .highlight {
-            color: #f44336;
-            animation: blink 0.5s 3; /* 0.5秒間隔で3回点滅 */
+
+        .controls-group {
+            margin-bottom: 20px;
         }
-        @keyframes blink {
-            50% { opacity: 0; }
+
+        .controls-group h3 {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
         }
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px; /* ボタンの下にマージンを追加 */
-            /* position: absolute; と top: 70px; を削除 */
-        }
-        .history-container {
-            width: 100%;
-            text-align: left;
-            margin-top: 20px; /* ボタンの下に配置するためのマージン */
-        }
-        .history-title {
-            font-size: 18px; /* タイトル文字サイズを前の値（18px）に戻す */
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .history {
-            font-size: 16px; /* 履歴文字サイズを前の値（16px）に戻す */
-            color: #666;
-            width: 100%;
-            max-height: 320px; /* 履歴の高さを維持（名前5漢字×100行×3回全表示可能） */
-            overflow-y: auto; /* 必要に応じて縦スクロール */
-            border: 1px solid #ddd;
-            padding: 10px; /* パディングを前の値（10px）に戻す */
-            border-radius: 4px;
-            background-color: #fafafa;
-            word-wrap: break-word; /* 長い名前も折り返し */
-        }
+
         textarea#nameInput {
-            margin: 10px 0;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical; /* 允许垂直调整大小 */
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1em;
+            min-height: 100px;
+            margin-bottom: 10px;
         }
-        .name-buttons {
+
+        .control-buttons {
             display: flex;
             gap: 10px;
-            margin: 10px 0;
-            position: relative;
-            top: 0; /* ボタンをテーブルの上部に固定 */
+            margin-bottom: 20px;
         }
+
         .row-input {
             display: flex;
             gap: 10px;
-            margin: 10px 0;
-            position: relative;
-            top: 0; /* 行数入力欄とボタンをテーブルの上部に固定 */
             align-items: center;
         }
+
         .row-input input {
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 60px;
-            font-size: 16px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 80px;
+            font-size: 1em;
+            text-align: center;
         }
+
+        .table-container {
+            max-height: 65vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: center;
+            font-size: 0.95em;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--light-text-color);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+        tbody tr:hover {
+            background-color: #f1f5fe;
+        }
+
+        .name-input {
+            width: 150px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .name-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .result-area .result {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding: 10px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s, transform 0.3s;
+            word-break: break-all;
+        }
+
+        .result.highlight {
+            color: var(--highlight-color);
+            transform: scale(1.1);
+            animation: blink 0.5s 3;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.2; }
+        }
+
+        .history-container {
+            text-align: left;
+        }
+
+        .history-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .history {
+            font-size: 1em;
+            color: #666;
+            width: 100%;
+            box-sizing: border-box;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--background-color);
+            word-break: break-all;
+        }
+
         button {
-            padding: 12px 24px; /* ボタンのパディングを前の値（12px 24px）に戻す */
-            font-size: 16px; /* ボタン文字サイズを前の値（16px）に戻す */
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 700;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            background-color: #3F51B5; /* 「抽選」「名前追加」「行数変更」ボタンを明るめのダークブルー（インディゴ）に変更 */
-            color: white;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
+            flex-grow: 1;
         }
         button:hover {
-            background-color: #303F9F; /* ホバー時のインディゴを少し暗く */
+            transform: translateY(-2px);
         }
-        .name-buttons button:nth-child(2),
-        .row-input button,
-        .button-container button:nth-child(2) {
-            background-color: #757575; /* 「名前クリア」「行数変更」「クリア」ボタンを明るめのグレー（中間グレー）に変更 */
+        button:active {
+            transform: translateY(0);
         }
-        .name-buttons button:nth-child(2):hover,
-        .row-input button:hover,
-        .button-container button:nth-child(2):hover {
-            background-color: #616161; /* ホバー時のグレーを少し暗く */
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: var(--light-text-color);
         }
+        .primary-btn:hover {
+            background-color: var(--primary-dark-color);
+        }
+
+        .secondary-btn {
+            background-color: var(--secondary-color);
+            color: var(--light-text-color);
+        }
+        .secondary-btn:hover {
+            background-color: var(--secondary-dark-color);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .main-content, .sidebar {
+                width: 100%;
+                max-width: 800px;
+            }
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .control-buttons, .row-input {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>指名抽選ツール</h1>
+        <p>公正かつ迅速に、次の担当者を指名します。</p>
+    </div>
+
     <div class="container">
-        <div>
-            <textarea id="nameInput" rows="5" cols="30" placeholder="名前を一行ずつ入力または貼り付け"></textarea>
-            <div class="name-buttons">
-                <button onclick="pasteNames()">名前追加</button>
-                <button onclick="clearNames()" title="名前をクリアします">名前クリア</button>
+        <div class="main-content">
+            <div class="controls-group">
+                <h3>参加者リスト</h3>
+                <textarea id="nameInput" rows="5" placeholder="名前を一行ずつ入力または貼り付け"></textarea>
+                <div class="control-buttons">
+                    <button onclick="pasteNames()" class="primary-btn">名前追加</button>
+                    <button onclick="clearNames()" class="secondary-btn" title="名前をクリアします">名前クリア</button>
+                </div>
+                <div class="row-input">
+                    <input type="number" id="rowCount" min="5" max="100" value="20" placeholder="行数">
+                    <button onclick="updateRows()" class="secondary-btn" title="行数を変更します">行数変更</button>
+                </div>
             </div>
-            <div class="row-input">
-                <input type="number" id="rowCount" min="5" max="100" value="20" placeholder="行数">
-                <button onclick="updateRows()" title="行数を変更します">行数変更</button>
+            <div class="table-container">
+                <table id="nominationTable">
+                    <thead>
+                        <tr>
+                            <th>番号</th>
+                            <th>名前</th>
+                            <th>1回目</th>
+                            <th>2回目</th>
+                            <th>3回目</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
-            <table id="nominationTable">
-                <thead>
-                    <tr>
-                        <th>行番号</th>
-                        <th>名前</th>
-                        <th>1回目</th>
-                        <th>2回目</th>
-                        <th>3回目</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
         </div>
-        <div class="result-area">
-            <div class="result" id="resultDisplay">抽選結果</div>
-            <div class="button-container">
-                <button onclick="draw()">抽選</button>
-                <button onclick="clearAll()" title="抽選結果と履歴をクリアします">クリア</button>
+
+        <div class="sidebar">
+            <div class="card result-area">
+                <div class="result" id="resultDisplay">抽選結果</div>
+                <div class="control-buttons">
+                    <button onclick="draw()" class="primary-btn">抽選開始</button>
+                    <button onclick="clearAll()" class="secondary-btn" title="抽選結果と履歴をクリアします">リセット</button>
+                </div>
             </div>
-            <div class="history-container">
+            <div class="card history-container">
                 <div class="history-title">抽選履歴</div>
                 <div class="history" id="drawHistory"></div>
             </div>
@@ -200,18 +349,17 @@
         const resultDisplay = document.getElementById('resultDisplay');
         const drawHistory = document.getElementById('drawHistory');
         const rowCountInput = document.getElementById('rowCount');
-        let maxRows = 20; // デフォルトの行数
+        let maxRows = 20;
         let history = [];
-        let currentRound = 1; // 現在のラウンド（1, 2, 3）
-        let drawCount = 0; // 抽選カウント
+        let currentRound = 1;
+        let drawCount = 0;
 
-        // テーブル初期化
         function initializeTable() {
-            tbody.innerHTML = ''; // 既存の行をクリア
+            tbody.innerHTML = '';
             for (let i = 0; i < maxRows; i++) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${i + 1}</td> <!-- 行番号 -->
+                    <td>${i + 1}</td>
                     <td><input type="text" class="name-input" maxlength="20"></td>
                     <td></td>
                     <td></td>
@@ -219,21 +367,8 @@
                 `;
                 tbody.appendChild(row);
             }
-            // 既存の名前や抽選結果を保持
-            const existingNames = Array.from(tbody.getElementsByTagName('input')).map(input => input.value.trim());
-            for (let i = 0; i < Math.min(existingNames.length, maxRows); i++) {
-                tbody.getElementsByTagName('input')[i].value = existingNames[i];
-            }
-            // 抽選結果も保持
-            for (let i = 0; i < maxRows; i++) {
-                const cells = tbody.getElementsByTagName('tr')[i].getElementsByTagName('td');
-                for (let j = 2; j < 5; j++) { // 行番号列（1列目）をスキップ
-                    cells[j].textContent = cells[j].textContent || '';
-                }
-            }
         }
 
-        // 初期化
         initializeTable();
 
         function getParticipants(round) {
@@ -241,7 +376,7 @@
             const participants = [];
             for (let i = 0; i < rows.length; i++) {
                 const name = rows[i].getElementsByTagName('input')[0].value.trim();
-                const cell = rows[i].getElementsByTagName('td')[round + 1]; // 行番号列をスキップ
+                const cell = rows[i].getElementsByTagName('td')[round + 1];
                 if (name && !cell.textContent) {
                     participants.push({ name, row: i });
                 }
@@ -250,14 +385,18 @@
         }
 
         function draw() {
-            const participants = getParticipants(currentRound);
+            let participants = getParticipants(currentRound);
             if (participants.length === 0) {
                 if (currentRound < 3) {
                     currentRound++;
-                    draw(); // 次のラウンドへ
-                    return;
+                    participants = getParticipants(currentRound);
+                    if (participants.length === 0) {
+                        resultDisplay.textContent = "全完了";
+                        resultDisplay.classList.remove('highlight');
+                        return;
+                    }
                 } else {
-                    resultDisplay.textContent = "抽選完了";
+                    resultDisplay.textContent = "全完了";
                     resultDisplay.classList.remove('highlight');
                     return;
                 }
@@ -275,27 +414,24 @@
             const winner = participants[winnerIndex];
             resultDisplay.textContent = winner.name;
 
-            // 抽選ごとに結果を強調表示
             resultDisplay.classList.add('highlight');
-            setTimeout(() => resultDisplay.classList.remove('highlight'), 1500); // 1.5秒後に元に戻る
+            setTimeout(() => resultDisplay.classList.remove('highlight'), 1500);
 
             const row = tbody.getElementsByTagName('tr')[winner.row];
-            const cell = row.getElementsByTagName('td')[currentRound + 1]; // 行番号列をスキップ
+            const cell = row.getElementsByTagName('td')[currentRound + 1];
             drawCount++;
             cell.textContent = drawCount;
 
-            // 抽選履歴に追加
             history.push(winner.name);
-            drawHistory.textContent = history.join('、');
+            drawHistory.textContent = history.join(' → ');
         }
 
         function clearAll() {
             if (drawCount > 0) {
-                // 抽選結果がある場合、名前はクリアせず、抽選結果と履歴のみクリア
                 const rows = tbody.getElementsByTagName('tr');
                 for (let i = 0; i < rows.length; i++) {
                     const cells = rows[i].getElementsByTagName('td');
-                    for (let j = 2; j < cells.length; j++) { // 行番号列と名前列をスキップ
+                    for (let j = 2; j < cells.length; j++) {
                         cells[j].textContent = '';
                     }
                 }
@@ -309,34 +445,45 @@
         }
 
         function clearNames() {
-            // 名前とテキストエリアをクリア
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].getElementsByTagName('input')[0].value = '';
+            const inputs = tbody.getElementsByTagName('input');
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = '';
             }
-            document.getElementById('nameInput').value = ''; // テキストエリアもクリア
+            document.getElementById('nameInput').value = '';
         }
 
         function pasteNames() {
             const text = document.getElementById('nameInput').value;
             const names = text.split('\n').map(name => name.trim()).filter(name => name);
+            const inputs = tbody.getElementsByTagName('input');
 
-            const rows = tbody.getElementsByTagName('tr');
-            for (let i = 0; i < Math.min(names.length, rows.length); i++) {
-                rows[i].getElementsByTagName('input')[0].value = names[i];
+            if (names.length > inputs.length) {
+                alert(`名前の数が表の行数を超えています（${names.length}名）。行数を増やしてください。`);
+                return;
             }
-            document.getElementById('nameInput').value = ''; // 清空输入框
+
+            for (let i = 0; i < Math.min(names.length, inputs.length); i++) {
+                inputs[i].value = names[i];
+            }
+            document.getElementById('nameInput').value = '';
         }
 
         function updateRows() {
             const newRows = parseInt(rowCountInput.value, 10);
             if (isNaN(newRows) || newRows < 5 || newRows > 100) {
                 alert("行数は5〜100の範囲で入力してください。");
-                rowCountInput.value = maxRows; // デフォルト値に戻す
+                rowCountInput.value = maxRows;
                 return;
             }
+            const existingNames = Array.from(tbody.getElementsByTagName('input')).map(input => input.value);
+            
             maxRows = newRows;
             initializeTable();
+
+            const newInputs = tbody.getElementsByTagName('input');
+            for(let i = 0; i < Math.min(existingNames.length, newInputs.length); i++) {
+                newInputs[i].value = existingNames[i];
+            }
         }
     </script>
 </body>
