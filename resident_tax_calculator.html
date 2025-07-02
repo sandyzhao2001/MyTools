@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>住民税・ふるさと納税 目安計算ツール（源泉徴収票ベース）</title>
+    <style>
+        /* (CSSは前回から変更なしのため、ここでは省略します) */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif; background-color: #f4f7f9; color: #333; line-height: 1.7; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 20px auto; background-color: #fff; padding: 20px 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1, h2 { font-weight: 600; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; }
+        h1 { text-align: center; border-bottom: none; font-size: 28px; }
+        h2 { font-size: 22px; }
+        .form-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .form-table th, .form-table td { border: 1px solid #ddd; padding: 12px 15px; text-align: left; vertical-align: middle; }
+        .form-table th { background-color: #f9f9f9; width: 35%; font-weight: 600; }
+        .form-table td { background-color: #fff; }
+        .input-group { display: flex; align-items: center; }
+        .input-group input[type="text"], .input-group input[type="number"], .input-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; text-align: right; }
+        .input-group input.currency.default-zero { color: #999; }
+        .input-group input.currency { color: #333; }
+        .input-group span { margin-left: 8px; white-space: nowrap; }
+        .sub-item th { font-weight: normal; background-color: #fafcff; }
+        .tooltip { position: relative; cursor: pointer; display: inline-block; margin-left: 8px; width: 18px; height: 18px; background-color: #007bff; color: white; border-radius: 50%; text-align: center; font-weight: bold; line-height: 18px; font-size: 12px; }
+        .tooltip .tooltip-text { visibility: hidden; width: 250px; background-color: #555; color: #fff; text-align: left; border-radius: 6px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; transition: opacity 0.3s; font-size: 13px; font-weight: normal; }
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .button-wrapper { display: flex; gap: 15px; margin-top: 30px; }
+        .calc-button, .clear-button { display: block; flex: 1; padding: 15px; color: white; border: none; border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        .calc-button { background-color: #007bff; }
+        .calc-button:hover { background-color: #0056b3; }
+        .clear-button { background-color: #6c757d; }
+        .clear-button:hover { background-color: #5a6268; }
+        #result-area { display: none; margin-top: 40px; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .result-table th, .result-table td { border: 1px solid #ccc; padding: 12px; }
+        .result-table .category-header { background-color: #e9ecef; font-weight: bold; width: 20%; }
+        .result-table .item-name { width: 30%; }
+        .result-table .amount { text-align: right; font-weight: bold; font-family: monospace, monospace; font-size: 16px; width: 30%; }
+        .result-table .help-text { font-size: 12px; color: #555; background-color: #f9f9f9; }
+        .total-row td { background-color: #f1f8ff; font-weight: bold; }
+        .final-result { border: 2px solid #007bff; background-color: #f1f8ff; padding: 20px; margin-top: 30px; border-radius: 8px; text-align: center; }
+        .final-result .result-label { font-size: 18px; font-weight: bold; }
+        .final-result .result-amount { font-size: 36px; font-weight: bold; color: #d9534f; margin: 10px 0; }
+        .final-result .result-note { font-size: 14px; color: #555; }
+        .final-result-item { margin-bottom: 20px; }
+        .final-result-item:last-child { margin-bottom: 0; }
+        @media (max-width: 768px) { .container { padding: 15px; } h1 { font-size: 24px; } h2 { font-size: 20px; } .form-table, .result-table { font-size: 14px; } .form-table th, .form-table td, .result-table th, .result-table td { padding: 8px; } .input-group input, .input-group select { font-size: 14px; } .button-wrapper { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>住民税・ふるさと納税 目安計算ツール</h1>
+        <p style="text-align: center; color: #555;">お手元の源泉徴収票を見ながら、金額をそのまま転記してください。</p>
+
+        <form id="tax-form">
+            <h2>【入力画面】（源泉徴収票スタイル）</h2>
+            <table class="form-table">
+                <!-- (他の入力項目は変更なし) -->
+                <tr><th>① 支払金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shiharai_kingaku" class="currency"><span>円</span></div></td></tr>
+                <tr><th>② 給与所得控除後の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="kyuyo_shotoku_koujogo" class="currency"><span>円</span></div></td></tr>
+                <tr><th>③ 所得控除の額の合計額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shotoku_koujo_gokei" class="currency"><span>円</span></div></td></tr>
+                <tr><th>④ 源泉徴収税額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="gensen_choshu_zeigaku" class="currency"><span>円</span></div></td></tr>
+                <tr><th>⑤-1 社会保険料等の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shakai_hokenryo" class="currency"><span>円</span></div></td></tr>
+                <tr class="sub-item"><th>⑤-2 （内）小規模企業共済等掛金の額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shokibo_kyosai" class="currency"><span>円</span></div></td></tr>
+                <tr><th colspan="2">⑥ 生命保険料の金額の内訳</th></tr>
+                <tr class="sub-item"><th>新生命保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shin_seimei" class="currency"><span>円</span></div></td></tr>
+                <tr class="sub-item"><th>旧生命保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="kyu_seimei" class="currency"><span>円</span></div></td></tr>
+                <tr class="sub-item"><th>介護医療保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="kaigo_iryo" class="currency"><span>円</span></div></td></tr>
+                <tr class="sub-item"><th>新個人年金保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="shin_nenkin" class="currency"><span>円</span></div></td></tr>
+                <tr class="sub-item"><th>旧個人年金保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="kyu_nenkin" class="currency"><span>円</span></div></td></tr>
+                <tr><th>⑦ 地震保険料の金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="jishin_hokenryo" class="currency"><span>円</span></div></td></tr>
+                <tr><th colspan="2">⑧ 配偶者の有無と情報</th></tr>
+                <tr class="sub-item"><th>配偶者の有無</th><td><div class="input-group"><select id="haigusha_umu"><option value="無">無</option><option value="有">有</option></select></div></td></tr>
+                <tr class="sub-item"><th>配偶者の合計所得金額</th><td><div class="input-group"><input type="text" inputmode="numeric" id="haigusha_shotoku" class="currency"><span>円</span></div></td></tr>
+                <tr><th colspan="2">⑨ 扶養親族の人数</th></tr>
+                <tr class="sub-item"><th>特定（19歳以上23歳未満）</th><td><div class="input-group"><input type="number" id="fuyo_tokutei" value="0"><span>人</span></div></td></tr>
+                <tr class="sub-item"><th>老人（70歳以上）</th><td><div class="input-group"><input type="number" id="fuyo_rojin" value="0"><span>人</span></div></td></tr>
+                <tr class="sub-item"><th>その他</th><td><div class="input-group"><input type="number" id="fuyo_sonota" value="0"><span>人</span></div></td></tr>
+
+                <!-- ★★★ 変更点 ★★★ -->
+                <tr>
+                    <th>⑩ 住宅借入金等特別控除の額
+                        <div class="tooltip">?
+                            <span class="tooltip-text">源泉徴収票の「住宅借入金等特別控除の額」を転記してください。これは所得税から実際に控除された額です。</span>
+                        </div>
+                    </th>
+                    <td>
+                        <div class="input-group">
+                            <input type="text" inputmode="numeric" id="jutaku_loan_koujo" class="currency"><span>円</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="sub-item">
+                    <th>（参考）住宅借入金等特別控除可能額
+                        <div class="tooltip">?
+                            <span class="tooltip-text">年末調整時に提出した申告書や、税務署発行の証明書に記載の「控除可能額」を入力してください。不明な場合は⑩と同じ額を入力。</span>
+                        </div>
+                    </th>
+                    <td>
+                        <div class="input-group">
+                            <input type="text" inputmode="numeric" id="jutaku_loan_kano_gaku" class="currency"><span>円</span>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+            <div class="button-wrapper">
+                <button type="button" id="clear-button" class="clear-button">入力内容をクリア</button>
+                <button type="submit" class="calc-button">計算実行</button>
+            </div>
+        </form>
+
+        <div id="result-area">
+             <!-- (出力画面のHTMLは変更なし) -->
+             <h2>【出力画面】（住民税通知書スタイル）</h2>
+             <table class="result-table">
+                 <thead><tr><th>区分</th><th>項目名</th><th>金額</th><th class="help-text">計算のポイント（ヘルプ）</th></tr></thead>
+                 <tbody>
+                     <tr><td class="category-header" rowspan="2">所得</td><td class="item-name"><strong>総所得金額 ①</strong></td><td class="amount" id="res_soshotoku"></td><td class="help-text">入力した「給与所得控除後の金額」と同じです。</td></tr>
+                     <tr class="total-row"><td class="item-name">所得合計</td><td class="amount" id="res_soshotoku_total"></td><td class="help-text"></td></tr>
+                     <tr><td class="category-header" rowspan="8">所得控除</td><td class="item-name">社会保険料</td><td class="amount" id="res_koujo_shakai"></td><td class="help-text">入力値から小規模企業共済分を引いた額です。</td></tr>
+                     <tr><td class="item-name">小規模企業共済</td><td class="amount" id="res_koujo_shokibo"></td><td class="help-text">入力値と同じです。</td></tr>
+                     <tr><td class="item-name">生命保険料</td><td class="amount" id="res_koujo_seimei"></td><td class="help-text">入力された保険料を<strong>住民税のルール</strong>で再計算した控除額です。</td></tr>
+                     <tr><td class="item-name">地震保険料</td><td class="amount" id="res_koujo_jishin"></td><td class="help-text">入力された保険料を<strong>住民税のルール</strong>で再計算した控除額です。</td></tr>
+                     <tr><td class="item-name">配偶者・扶養</td><td class="amount" id="res_koujo_jinteki"></td><td class="help-text">入力された情報を<strong>住民税のルール</strong>で再計算した控除額です。</td></tr>
+                     <tr><td class="item-name">基礎控除</td><td class="amount" id="res_koujo_kiso"></td><td class="help-text">住民税の基礎控除額（最大43万円）です。</td></tr>
+                     <tr class="total-row"><td class="item-name"><strong>所得控除合計 ②</strong></td><td class="amount" id="res_koujo_gokei"></td><td class="help-text">上記控除額の合計です。</td></tr>
+                     <tr><td class="item-name"></td><td class="amount"></td><td class="help-text"></td></tr>
+                     <tr class="total-row"><td class="category-header">課税標準</td><td class="item-name"><strong>課税総所得金額 ③</strong> (① - ②)</td><td class="amount" id="res_kazei_shotoku"></td><td class="help-text">①総所得金額 － ②所得控除合計 です。（1,000円未満切捨）</td></tr>
+                     <tr><td class="category-header" rowspan="6">税額</td><td class="item-name"><strong>税額控除前所得割額 ④</strong></td><td class="amount" id="res_zeigaku_mae"></td><td class="help-text">③課税総所得金額 × 10%（市民税6%＋県民税4%）です。</td></tr>
+                     <tr><td class="item-name"><strong>税額控除額 ⑤</strong></td><td class="amount" id="res_zeigaku_koujo_gokei"></td><td class="help-text"></td></tr>
+                     <tr><td class="item-name" style="padding-left: 30px;">調整控除</td><td class="amount" id="res_chosei_koujo"></td><td class="help-text">所得税と住民税の人的控除の差を調整するための控除です。</td></tr>
+                     <tr><td class="item-name" style="padding-left: 30px;">住宅ローン控除</td><td class="amount" id="res_jutaku_loan_koujo"></td><td class="help-text">所得税で引ききれなかった住宅ローン控除額です。</td></tr>
+                     <tr class="total-row"><td class="item-name"><strong>所得割額 ⑥</strong> (④ - ⑤)</td><td class="amount" id="res_shotokuwari"></td><td class="help-text"></td></tr>
+                     <tr><td class="item-name"><strong>均等割額 ⑦</strong></td><td class="amount" id="res_kintowari"></td><td class="help-text">所得にかかわらず一律で課税されます。</td></tr>
+                     <tr class="total-row" style="background-color: #ffe4e1;"><td class="category-header">年税額</td><td class="item-name"><strong>差引納付額 ⑨</strong> (⑥ + ⑦)</td><td class="amount" id="res_nenzeigaku"></td><td class="help-text">100円未満は切り捨てられます。</td></tr>
+                 </tbody>
+             </table>
+             <div class="final-result">
+                 <div class="final-result-item"><div class="result-label">あなたの翌年度の住民税（年税額）は…</div><div class="result-amount" id="final_juminzei"></div><div class="result-note" id="final_juminzei_monthly"></div></div>
+                 <div class="final-result-item"><div class="result-label">今年のふるさと納税 上限額の目安は…</div><div class="result-amount" id="final_furusato"></div><div class="result-note">（この金額までの寄付なら、自己負担2,000円で済みます。）</div></div>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 初期化処理 ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm(); 
+            document.getElementById('clear-button').addEventListener('click', initializeForm);
+            document.getElementById('tax-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                calculate();
+            });
+        });
+        
+        function initializeForm() {
+            const form = document.getElementById('tax-form');
+            form.reset(); 
+            form.querySelectorAll('input.currency').forEach(input => {
+                input.value = '0';
+                formatCurrency(input);
+                input.addEventListener('input', (e) => formatCurrency(e.target));
+                input.addEventListener('blur', (e) => formatCurrency(e.target, true));
+            });
+            form.querySelectorAll('input[type="number"]').forEach(input => { input.value = 0; });
+            document.getElementById('result-area').style.display = 'none';
+        }
+
+        // --- ヘルパー関数 ---
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            const val = (el.type === 'number') ? el.value : el.value.replace(/,/g, '');
+            return parseInt(val) || 0;
+        }
+        const getSelectVal = (id) => document.getElementById(id).value;
+        const formatYen = (num) => Math.round(num).toLocaleString() + " 円";
+        const setVal = (id, val, isYen = true) => {
+            document.getElementById(id).textContent = isYen ? formatYen(val) : val;
+        };
+        function formatCurrency(input, onBlur = false) {
+            let value = input.value.replace(/,/g, '');
+            if (isNaN(value) || value.trim() === '') { value = '0'; }
+            if (onBlur && input.value.trim() === '') { value = '0'; }
+            input.value = Number(value).toLocaleString();
+            if (Number(value) === 0) { input.classList.add('default-zero'); } 
+            else { input.classList.remove('default-zero'); }
+        }
+
+        // --- メインの計算ロジック ---
+        function calculate() {
+            // --- 1. 入力値の受領 ---
+            const inputs = {
+                kyuyo_shotoku_koujogo: getVal('kyuyo_shotoku_koujogo'),
+                shotoku_koujo_gokei: getVal('shotoku_koujo_gokei'),
+                shakai_hokenryo: getVal('shakai_hokenryo'),
+                shokibo_kyosai: getVal('shokibo_kyosai'),
+                shin_seimei: getVal('shin_seimei'),
+                kyu_seimei: getVal('kyu_seimei'),
+                kaigo_iryo: getVal('kaigo_iryo'),
+                shin_nenkin: getVal('shin_nenkin'),
+                kyu_nenkin: getVal('kyu_nenkin'),
+                jishin_hokenryo: getVal('jishin_hokenryo'),
+                haigusha_umu: getSelectVal('haigusha_umu'),
+                haigusha_shotoku: getVal('haigusha_shotoku'),
+                fuyo_tokutei: getVal('fuyo_tokutei'),
+                fuyo_rojin: getVal('fuyo_rojin'),
+                fuyo_sonota: getVal('fuyo_sonota'),
+                jutaku_loan_koujo: getVal('jutaku_loan_koujo'),
+                // ★★★ 変更点 ★★★
+                jutaku_loan_kano_gaku: getVal('jutaku_loan_kano_gaku'),
+            };
+
+            // --- 2. 住民税の所得控除額の計算 ---
+            const juminDeductions = {};
+            // (このセクションは変更なし)
+            juminDeductions.shakai = inputs.shakai_hokenryo - inputs.shokibo_kyosai;
+            juminDeductions.shokibo = inputs.shokibo_kyosai;
+            const calcJuminSeimeiSub = (pay) => { if (pay <= 12000) return pay; if (pay <= 32000) return pay * 0.5 + 6000; return 28000; };
+            const calcJuminKyuSeimeiSub = (pay) => { if (pay <= 15000) return pay; if (pay <= 40000) return pay * 0.5 + 7500; return 35000; };
+            const seimeiKoujo = Math.min(calcJuminSeimeiSub(inputs.shin_seimei) + calcJuminKyuSeimeiSub(inputs.kyu_seimei), 28000);
+            const nenkinKoujo = Math.min(calcJuminSeimeiSub(inputs.shin_nenkin) + calcJuminKyuSeimeiSub(inputs.kyu_nenkin), 28000);
+            const kaigoKoujo = calcJuminSeimeiSub(inputs.kaigo_iryo);
+            juminDeductions.seimei = Math.min(seimeiKoujo + nenkinKoujo + kaigoKoujo, 70000);
+            juminDeductions.jishin = Math.min(inputs.jishin_hokenryo * 0.5, 25000);
+            let jintekiKoujo = 0;
+            const jintekiDiff = { spouse: 0, dependents: 0, basic: 50000 };
+            if (inputs.haigusha_umu === '有') {
+                const sIncome = inputs.haigusha_shotoku;
+                if (sIncome <= 480000) { jintekiKoujo += 330000; jintekiDiff.spouse = 50000; } 
+                else if (sIncome > 480000 && sIncome <= 1330000) {
+                    const spouseSpecialDedTableJumin = [ {min: 480001, max: 1000000, ded: 330000}, {min: 1000001, max: 1050000, ded: 310000}, {min: 1050001, max: 1100000, ded: 260000}, {min: 1100001, max: 1150000, ded: 210000}, {min: 1150001, max: 1200000, ded: 160000}, {min: 1200001, max: 1250000, ded: 110000}, {min: 1250001, max: 1300000, ded: 60000}, {min: 1300001, max: 1330000, ded: 30000} ];
+                    const dedInfoJumin = spouseSpecialDedTableJumin.find(t => sIncome >= t.min && sIncome <= t.max);
+                    if (dedInfoJumin) jintekiKoujo += dedInfoJumin.ded;
+                    const spouseSpecialDedTableShotoku = [ {min: 480001, max: 950000, ded: 380000}, {min: 950001, max: 1000000, ded: 360000}, {min: 1000001, max: 1050000, ded: 310000}, {min: 1050001, max: 1100000, ded: 260000}, {min: 1100001, max: 1150000, ded: 210000}, {min: 1150001, max: 1200000, ded: 160000}, {min: 1200001, max: 1250000, ded: 110000}, {min: 1250001, max: 1300000, ded: 60000}, {min: 1300001, max: 1330000, ded: 30000} ];
+                    const dedInfoShotoku = spouseSpecialDedTableShotoku.find(t => sIncome >= t.min && sIncome <= t.max);
+                    if (dedInfoJumin && dedInfoShotoku) jintekiDiff.spouse = dedInfoShotoku.ded - dedInfoJumin.ded;
+                }
+            }
+            jintekiKoujo += inputs.fuyo_sonota * 330000;
+            jintekiDiff.dependents += inputs.fuyo_sonota * (380000 - 330000);
+            jintekiKoujo += inputs.fuyo_tokutei * 450000;
+            jintekiDiff.dependents += inputs.fuyo_tokutei * (630000 - 450000);
+            jintekiKoujo += inputs.fuyo_rojin * 380000;
+            jintekiDiff.dependents += inputs.fuyo_rojin * (480000 - 380000);
+            juminDeductions.jinteki = jintekiKoujo;
+            juminDeductions.kiso = 430000;
+            juminDeductions.total = juminDeductions.shakai + juminDeductions.shokibo + juminDeductions.seimei + juminDeductions.jishin + juminDeductions.jinteki + juminDeductions.kiso;
+            
+            // --- 3. 課税標準の計算 ---
+            const kazeiShotoku = Math.max(0, inputs.kyuyo_shotoku_koujogo - juminDeductions.total);
+            const kazeiShotokuMarume = Math.floor(kazeiShotoku / 1000) * 1000;
+
+            // --- 4. 税額の計算 ---
+            const zeigakuMae = kazeiShotokuMarume * 0.1;
+
+            // --- 5. 税額控除の計算 ---
+            const totalJintekiDiff = jintekiDiff.basic + jintekiDiff.spouse + jintekiDiff.dependents;
+            let choseiKoujo = 0;
+            if (kazeiShotokuMarume <= 2000000) {
+                choseiKoujo = Math.min(totalJintekiDiff, kazeiShotokuMarume) * 0.05;
+            } else {
+                choseiKoujo = Math.max((totalJintekiDiff - (kazeiShotokuMarume - 2000000)) * 0.05, 2500);
+            }
+
+            // ★★★ 変更点：住宅ローン控除の計算ロジック ★★★
+            // 所得税の課税総所得金額を計算
+            const shotokuzeiKazeiShotoku = Math.max(0, inputs.kyuyo_shotoku_koujogo - inputs.shotoku_koujo_gokei);
+            
+            // A: 所得税から控除しきれなかった額
+            const undeductedFromIncomeTax = Math.max(0, inputs.jutaku_loan_kano_gaku - inputs.jutaku_loan_koujo);
+            
+            // B: 住民税の控除上限額
+            const limitByTaxableIncome = shotokuzeiKazeiShotoku * 0.07;
+            const absoluteLimit = 136500;
+            const juminzeiLimit = Math.min(limitByTaxableIncome, absoluteLimit);
+            
+            // 住民税での控除額 = AとBの小さい方
+            const jutakuLoanKoujoJuminzei = Math.min(undeductedFromIncomeTax, juminzeiLimit);
+
+            const zeigakuKoujoGokei = choseiKoujo + jutakuLoanKoujoJuminzei;
+
+            // --- 6. 最終税額の算出 ---
+            const shotokuwari = Math.max(0, zeigakuMae - zeigakuKoujoGokei);
+            const kintowari = 5000;
+            const nenzeigakuMarume = Math.floor((shotokuwari + kintowari) / 100) * 100;
+            
+            // --- 7. ふるさと納税上限額の計算 (変更なし) ---
+            const getIncomeTaxRate = (income) => {
+                if (income <= 1950000) return 5; if (income <= 3300000) return 10;
+                if (income <= 6950000) return 20; if (income <= 9000000) return 23;
+                if (income <= 18000000) return 33; if (income <= 40000000) return 40; return 45;
+            };
+            const incomeTaxRate = getIncomeTaxRate(shotokuzeiKazeiShotoku);
+            const denominator = 0.9 - (incomeTaxRate / 100) * 1.021;
+            let furusatoLimit = (denominator > 0) ? (zeigakuMae * 0.2) / denominator + 2000 : 0;
+            
+            // --- 結果表示 (変更なし) ---
+            setVal('res_soshotoku', inputs.kyuyo_shotoku_koujogo);
+            setVal('res_soshotoku_total', inputs.kyuyo_shotoku_koujogo);
+            setVal('res_koujo_shakai', juminDeductions.shakai);
+            setVal('res_koujo_shokibo', juminDeductions.shokibo);
+            setVal('res_koujo_seimei', juminDeductions.seimei);
+            setVal('res_koujo_jishin', juminDeductions.jishin);
+            setVal('res_koujo_jinteki', juminDeductions.jinteki);
+            setVal('res_koujo_kiso', juminDeductions.kiso);
+            setVal('res_koujo_gokei', juminDeductions.total);
+            setVal('res_kazei_shotoku', kazeiShotokuMarume);
+            setVal('res_zeigaku_mae', zeigakuMae);
+            setVal('res_zeigaku_koujo_gokei', zeigakuKoujoGokei);
+            setVal('res_chosei_koujo', choseiKoujo);
+            setVal('res_jutaku_loan_koujo', jutakuLoanKoujoJuminzei);
+            setVal('res_shotokuwari', shotokuwari);
+            setVal('res_kintowari', kintowari);
+            setVal('res_nenzeigaku', nenzeigakuMarume);
+            setVal('final_juminzei', nenzeigakuMarume);
+            setVal('final_juminzei_monthly', `（毎月の給与から天引きされる額の目安は 約 ${formatYen(nenzeigakuMarume / 12)}です。）`, false);
+            setVal('final_furusato', furusatoLimit);
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
